@@ -7,56 +7,98 @@ const cloudinary = require('cloudinary');
 require('../handler/cloudinary');
 var newDinosaure = null;
 
+exports.searchUser = async (req, res, next) => {
+
+    /* Dinosaure.findOne(req.body, function (err, dinosaure) {
+         return res.json({ status: "success", message: "user added", data: dinosaure });
+     });*/
+
+    Dinosaure.findOne({ login: req.body.login })
+        .then(dinosaure => {
+            return res.json({ status: "success", message: "user found", data: dinosaure });
+        })
+
+};
 
 exports.register = async (req, res, next) => {
 
-    bcrypt.hash(req.body.password, 10).then(hash => {
-        const dinosaure = new Dinosaure({
-            login: req.body.login,
-            password: hash,
-            famille: req.body.famille,
-            age: req.body.age,
-            race: req.body.race,
-            nourriture: req.body.nourriture,
-            profileImage: "",
-            friends: []
-        });
-        newDinosaure = dinosaure
-        module.exports.newDinosaure = newDinosaure;
-        return res.json({ status: "success", message: "dinosaure object created" });
-    })
-
-};
-
-
-exports.uploadProfileImage = async (req, res, next) => {
-
+    newData = JSON.parse(req.body.data)
+    let params = new Dinosaure({
+        login: newData.login,
+        password: newData.password,
+        famille: newData.famille,
+        age: newData.age,
+        race: newData.race,
+        nourriture: newData.nourriture,
+        friends: newData.friends,
+        profileImage: newData.profileImage
+    });
     if (req.file != undefined) {
         const result = await cloudinary.v2.uploader.upload(req.file.path);
-        newDinosaure.profileImage = result.secure_url;
+        params.profileImage = result.secure_url;
     }
+    bcrypt.hash(newData.password, 10).then(hash => {
+        params.password = hash
+        return params
+    }).then(params => {
+        params.save().then(result => {
+            const token = jwt.sign(
+                {
+                    id: params._id
+                },
+                "secret_this_should_be_longer",
+                { expiresIn: '1h' }
+            );
+            res.status(200).json({
+                success: true,
+                token: "Bearer " + token,
+                user: params
+            });
 
-    newDinosaure.save().then(result => {
-        const token = jwt.sign(
-            {
-                id: newDinosaure._id
-            },
-            "secret_this_should_be_longer",
-            { expiresIn: '1h' }
-        );
-        res.status(200).json({
-            success: true,
-            token: "Bearer " + token,
-            user: newDinosaure
-        });
-
-    })
+        })
+    });
 
 };
+
+
+
+
+
+exports.newUser = async (req, res, next) => {
+    newData = JSON.parse(req.body.data)
+    console.log(newData);
+    let params = new Dinosaure({
+        login: newData.login,
+        password: newData.password,
+        famille: newData.famille,
+        age: newData.age,
+        race: newData.race,
+        nourriture: newData.nourriture,
+        friends: newData.friends,
+        profileImage: newData.profileImage
+    });
+    if (req.file != undefined) {
+        const result = await cloudinary.v2.uploader.upload(req.file.path);
+        params.profileImage = result.secure_url;
+    }
+    bcrypt.hash(newData.password, 10).then(hash => {
+        params.password = hash
+        return params
+    }).then(params => {
+        params.save().then(result => {
+            res.status(200).json({
+                success: true,
+                dinosaure: params
+            });
+
+        })
+    });
+
+};
+
 
 exports.updateProfile = async (req, res, next) => {
     newData = JSON.parse(req.body.data)
-
     let params = {
         login: newData.login,
         password: newData.password,
@@ -68,14 +110,15 @@ exports.updateProfile = async (req, res, next) => {
         profileImage: newData.profileImage
     };
     if (req.file != undefined) {
+        console.log("new profile image");
         const result = await cloudinary.v2.uploader.upload(req.file.path);
         params.profileImage = result.secure_url;
-
     }
 
     bcrypt.hash(newData.password, 10).then(hash => {
-
-        params.password = hash
+        if (newData.password[0] !== "$") {
+            params.password = hash
+        }
         return params
     }).then(params => {
 
@@ -87,31 +130,6 @@ exports.updateProfile = async (req, res, next) => {
             });
         });
     });
-
-    for (let prop in params) if (!params[prop]) delete params[prop];
-
-    /*Dinosaure.findOneAndUpdate({ _id: req.userData.id }, params, { new: true }).then(data => {
-        return res.status(200).json({
-            data
-        });
-    });*/
-    /* bcrypt.hash(newData.password, 10).then(hash => {
-         const dinosaure = new Dinosaure({
-             login: newData.login,
-             password: hash,
-             famille: newData.famille,
-             age: newData.age,
-             race: newData.race,
-             nourriture: newData.nourriture,
-             friends: newData.friends,
-             profileImage: newData.profileImage
-         });
- 
-         newDinosaure = dinosaure
- 
-     });*/
-
-
 
 };
 exports.getFriends = async (req, res, next) => {

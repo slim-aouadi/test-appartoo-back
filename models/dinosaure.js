@@ -5,6 +5,7 @@ const DinosaureSchema = new Schema({
     login: {
         type: String,
         trim: true,
+        unique: true
     },
     password: {
         type: String,
