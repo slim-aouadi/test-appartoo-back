@@ -8,21 +8,16 @@ require('../handler/cloudinary');
 var newDinosaure = null;
 
 exports.searchUser = async (req, res, next) => {
-
-    /* Dinosaure.findOne(req.body, function (err, dinosaure) {
-         return res.json({ status: "success", message: "user added", data: dinosaure });
-     });*/
-
-    Dinosaure.findOne({ login: req.body.login })
+    Dinosaure.findOne({ age: req.body.age, login: req.body.login, famille: req.body.famille, race: req.body.race, nourriture: req.body.nourriture })
         .then(dinosaure => {
             return res.json({ status: "success", message: "user found", data: dinosaure });
         })
-
 };
 
 exports.register = async (req, res, next) => {
 
     newData = JSON.parse(req.body.data)
+    console.log(newData);
     let params = new Dinosaure({
         login: newData.login,
         password: newData.password,
