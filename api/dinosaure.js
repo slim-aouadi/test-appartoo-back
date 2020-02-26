@@ -17,7 +17,6 @@ exports.searchUser = async (req, res, next) => {
 exports.register = async (req, res, next) => {
 
     newData = JSON.parse(req.body.data)
-    console.log(newData);
     let params = new Dinosaure({
         login: newData.login,
         password: newData.password,
@@ -61,7 +60,7 @@ exports.register = async (req, res, next) => {
 
 exports.newUser = async (req, res, next) => {
     newData = JSON.parse(req.body.data)
-    console.log(newData);
+
     let params = new Dinosaure({
         login: newData.login,
         password: newData.password,
