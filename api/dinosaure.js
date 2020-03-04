@@ -161,7 +161,7 @@ exports.getAllDinosaures = async (req, res, next) => {
             fetchedDinosaure = dinosaure;
         })
         .then(() => {
-            Dinosaure.find({ '_id': { $nin: fetchedDinosaure.friends } }).then(re => {
+            Dinosaure.find({ $and: [{ '_id': { $nin: fetchedDinosaure.friends } }, { '_id': { $ne: fetchedDinosaure._id } }] }).then(re => {
                 res.status(200).json(re)
             })
         })
